@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Super Ángulos TV! 🎯 Edición Smart TV LG</title>
+
+    <!-- ==========================================================================
+         ESTILOS OPTIMIZADOS PARA TELEVISIÓN LG (webOS / Chromium 87+)
+         - Formato panorámico 16:9 sin barras de desplazamiento (100vh / 100vw).
+         - Unidades en vh/vw para verse perfecto en televisores 1080p y 4K desde el sofá.
+         - Efectos :hover y :focus gigantes para el puntero del LG Magic Remote y cruceta.
+         - Sin <input> de texto para evitar que salte el teclado virtual de la TV.
+         ========================================================================== -->
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-mid: #1e1b4b;
+            --bg-light: #1e3a8a;
+            --panel-bg: rgba(255, 255, 255, 0.1);
+            --panel-border: rgba(255, 255, 255, 0.24);
+            --primary-gold: #facc15;
+            --text-white: #ffffff;
+            --correct-green: #22c55e;
+            --wrong-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Arial Rounded MT Bold', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            font-size: 2.3vh;
+        }
+
+        /* ==========================================================================
+           CABECERA SUPERIOR PANORÁMICA (HUD DE TELEVISIÓN)
+           ========================================================================== */
+        header {
+            height: 10vh;
+            background: rgba(0, 0, 0, 0.45);
+            border-bottom: 0.3vh solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3vw;
+            box-shadow: 0 0.6vh 2vh rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .tv-logo {
+            font-size: 3.8vh;
+            font-weight: 900;
+            color: var(--primary-gold);
+            text-shadow: 0 0.4vh 0 rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1vw;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+        }
+
+        .tv-top-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 0.3vh solid rgba(255, 255, 255, 0.35);
+            border-radius: 1.5vh;
+            padding: 1.1vh 1.8vw;
+            font-size: 2.4vh;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+            outline: none;
+        }
+
+        .tv-top-btn:hover,
+        .tv-top-btn:focus {
+            background: var(--primary-gold);
+            color: #0f172a;
+            border-color: #ffffff;
+            transform: scale(1.08);
+            box-shadow: 0 0 2vh var(--primary-gold);
+        }
+
+        .round-badge {
+            background: #0f172a;
+            border: 0.35vh solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 1vh 2.2vw;
+            border-radius: 5vh;
+            font-size: 2.7vh;
+            font-weight: 900;
+        }
+
+        /* ==========================================================================
+           CONTENEDOR DE PANTALLAS (FORMATO 16:9 SIN SCROLL)
+           ========================================================================== */
+        main {
+            flex: 1;
+            width: 100vw;
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2vh 3vw;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screen.active-screen {
+            display: flex;
+            animation: tvPopIn 0.35s ease-out;
+        }
+
+        @keyframes tvPopIn {
+            0% { opacity: 0; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ==========================================================================
+           PANTALLA 1: MENÚ PRINCIPAL DE TV (2 COLUMNAS GRANDES)
+           ========================================================================== */
+        #menuScreen {
+            gap: 3vw;
+            align-items: stretch;
+        }
+
+        .tv-panel {
+            background: var(--panel-bg);
+            border: 0.35vh solid var(--panel-border);
+            border-radius: 3vh;
+            padding: 3vh 2.5vw;
+            box-shadow: 0 1.5vh 4vh rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .menu-left {
+            flex: 1.3;
+        }
+
+        .menu-right {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+            gap: 2.5vh;
+        }
+
+        .panel-heading {
+            font-size: 2.6vh;
+            font-weight: 900;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.1vw;
+            margin-bottom: 1.2vh;
+            text-align: center;
+        }
+
+        .selector-row {
+            display: flex;
+            gap: 1.5vw;
+            margin-bottom: 2.2vh;
+        }
+
+        .tv-option-btn {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.65);
+            border: 0.4vh solid rgba(255, 255, 255, 0.25);
+            border-radius: 2.2vh;
+            padding: 2vh 1.2vw;
+            color: #ffffff;
+            font-size: 2.6vh;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.18s, border-color 0.18s, background 0.18s, box-shadow 0.18s;
+            outline: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8vh;
+        }
+
+        .tv-option-btn:hover,
+        .tv-option-btn:focus {
+            transform: scale(1.06);
+            border-color: #ffffff;
+            box-shadow: 0 0 2.5vh rgba(255, 255, 255, 0.5);
+        }
+
+        .tv-option-btn.selected {
+            background: linear-gradient(135deg, #7e22ce 0%, #4338ca 100%);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 2.5vh rgba(250, 204, 21, 0.55);
+        }
+
+        /* Selector de avatares sin teclado para TV */
+        .avatars-row {
+            display: flex;
+            gap: 1.5vw;
+        }
+
+        .avatar-card {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.6);
+            border: 0.35vh solid rgba(255, 255, 255, 0.25);
+            border-radius: 2.2vh;
+            padding: 1.6vh 1.2vw;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .avatar-change-btn {
+            background: #ffffff;
+            border: 0.35vh solid var(--primary-gold);
+            border-radius: 1.8vh;
+            font-size: 4.5vh;
+            width: 8vh;
+            height: 8vh;
+            cursor: pointer;
+            transition: transform 0.18s, box-shadow 0.18s;
+            outline: none;
+        }
+
+        .avatar-change-btn:hover,
+        .avatar-change-btn:focus {
+            transform: scale(1.12);
+            box-shadow: 0 0 2.5vh var(--primary-gold);
+        }
+
+        .big-action-btn {
+            width: 100%;
+            border: none;
+            border-radius: 2.6vh;
+            padding: 2.6vh 2vw;
+            font-size: 3.4vh;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.18s, box-shadow 0.18s;
+            outline: none;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .btn-play-tv {
+            background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+            box-shadow: 0 0.9vh 0 #14532d, 0 1.5vh 3vh rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-lab-tv {
+            background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+            box-shadow: 0 0.9vh 0 #78350f, 0 1.5vh 3vh rgba(0, 0, 0, 0.4);
+            font-size: 2.8vh;
+        }
+
+        .big-action-btn:hover,
+        .big-action-btn:focus {
+            transform: scale(1.05);
+            box-shadow: 0 0 3.5vh var(--primary-gold);
+            outline: 0.45vh solid #ffffff;
+        }
+
+        /* ==========================================================================
+           PANTALLA 2: JUEGO EN FORMATO PANORÁMICO 16:9 (IZQUIERDA ÁNGULO, DERECHA BOTONES)
+           ========================================================================== */
+        #gameScreen, #labScreen {
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 2vh;
+        }
+
+        .tv-game-body {
+            flex: 1;
+            display: flex;
+            gap: 2.5vw;
+            align-items: stretch;
+            height: 68vh;
+        }
+
+        /* Columna izquierda: Pizarra grande de alto contraste para ver desde el sofá */
+        .canvas-stage {
+            flex: 1.15;
+            background: #ffffff;
+            border-radius: 3vh;
+            border: 0.6vh solid #cbd5e1;
+            padding: 1.8vh 1.5vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1.5vh 4vh rgba(0, 0, 0, 0.55);
+            color: #0f172a;
+        }
+
+        .stage-title {
+            font-size: 3vh;
+            font-weight: 900;
+            color: #1e293b;
+            text-align: center;
+        }
+
+        canvas.tv-canvas {
+            width: 100%;
+            height: 46vh;
+            background: #f8fafc;
+            border-radius: 2vh;
+            border: 0.35vh dashed #94a3b8;
+        }
+
+        .stage-feedback {
+            width: 100%;
+            min-height: 7vh;
+            border-radius: 1.8vh;
+            padding: 1vh 1.5vw;
+            font-size: 2.5vh;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .stage-feedback.correct {
+            background: #dcfce7;
+            color: #14532d;
+            border: 0.4vh solid #22c55e;
+        }
+
+        .stage-feedback.wrong {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border: 0.4vh solid #ef4444;
+        }
+
+        /* Columna derecha: Cuadrícula 2x3 de botones gigantes para el Magic Remote */
+        .tv-options-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2vh 1.5vw;
+        }
+
+        .tv-angle-btn {
+            border: 0.4vh solid rgba(255, 255, 255, 0.35);
+            border-radius: 2.6vh;
+            padding: 1.5vh 1.2vw;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8vh;
+            transition: transform 0.16s, box-shadow 0.16s, border-color 0.16s;
+            outline: none;
+            box-shadow: 0 0.8vh 0 rgba(0, 0, 0, 0.35);
+        }
+
+        /* Efecto destacado para el puntero del mando LG o las flechas del mando */
+        .tv-angle-btn:hover:not(:disabled),
+        .tv-angle-btn:focus:not(:disabled) {
+            transform: scale(1.07);
+            border-color: #ffffff;
+            box-shadow: 0 0 3.2vh var(--primary-gold);
+            z-index: 5;
+        }
+
+        .tv-angle-btn:disabled {
+            opacity: 0.65;
+            cursor: default;
+        }
+
+        .tv-angle-btn .btn-main-text {
+            font-size: 3.3vh;
+            font-weight: 900;
+            text-shadow: 0 0.3vh 0 rgba(0, 0, 0, 0.35);
+        }
+
+        .tv-angle-btn .btn-sub-text {
+            font-size: 2vh;
+            font-weight: 800;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 0.4vh 1vw;
+            border-radius: 3vh;
+        }
+
+        /* Colores de cada botón de ángulo */
+        .color-agudo { background: linear-gradient(180deg, #0ea5e9 0%, #0369a1 100%); }
+        .color-recto { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); }
+        .color-obtuso { background: linear-gradient(180deg, #f97316 0%, #c2410c 100%); }
+        .color-llano { background: linear-gradient(180deg, #a855f7 0%, #6b21a8 100%); }
+        .color-consecutivos { background: linear-gradient(180deg, #ec4899 0%, #be185d 100%); }
+        .color-adyacentes { background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%); }
+
+        .tv-angle-btn.highlight-correct {
+            border: 0.6vh solid var(--primary-gold) !important;
+            transform: scale(1.06);
+            opacity: 1 !important;
+            box-shadow: 0 0 4vh var(--primary-gold) !important;
+        }
+
+        .tv-angle-btn.highlight-wrong {
+            filter: grayscale(0.6);
+        }
+
+        /* ==========================================================================
+           HUD INFERIOR DE MARCADORES DE LOS JUGADORES
+           ========================================================================== */
+        .tv-hud {
+            height: 14vh;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 2.5vh;
+            border: 0.3vh solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4vw;
+            padding: 0 3vw;
+        }
+
+        .hud-player-card {
+            flex: 1;
+            max-width: 42vw;
+            height: 10.5vh;
+            background: rgba(255, 255, 255, 0.1);
+            border: 0.35vh solid rgba(255, 255, 255, 0.2);
+            border-radius: 2vh;
+            padding: 0 2vw;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0.6;
+            transition: all 0.25s ease;
+        }
+
+        .hud-player-card.active-turn {
+            opacity: 1;
+            background: linear-gradient(90deg, rgba(250, 204, 21, 0.28) 0%, rgba(234, 179, 8, 0.18) 100%);
+            border-color: var(--primary-gold);
+            transform: translateY(-0.5vh) scale(1.03);
+            box-shadow: 0 0 2.5vh rgba(250, 204, 21, 0.45);
+        }
+
+        .hud-player-left {
+            display: flex;
+            align-items: center;
+            gap: 1.2vw;
+            font-size: 3.1vh;
+            font-weight: 900;
+        }
+
+        .hud-player-score {
+            background: var(--primary-gold);
+            color: #0f172a;
+            padding: 0.8vh 1.8vw;
+            border-radius: 4vh;
+            font-size: 3vh;
+            font-weight: 900;
+        }
+
+        /* ==========================================================================
+           PANTALLA 4: PODIO FINAL EN TV
+           ========================================================================== */
+        #resultScreen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-card-tv {
+            width: 72vw;
+            background: var(--panel-bg);
+            border: 0.4vh solid var(--primary-gold);
+            border-radius: 3.5vh;
+            padding: 4vh 4vw;
+            text-align: center;
+            box-shadow: 0 2vh 5vh rgba(0, 0, 0, 0.65);
+        }
+
+        .podium-list-tv {
+            display: flex;
+            gap: 2.5vw;
+            margin: 3.5vh 0;
+            justify-content: center;
+        }
+
+        .podium-item-tv {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.75);
+            border: 0.4vh solid rgba(255, 255, 255, 0.25);
+            border-radius: 2.5vh;
+            padding: 3vh 2vw;
+        }
+
+        .podium-item-tv.winner {
+            background: rgba(250, 204, 21, 0.22);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 3vh rgba(250, 204, 21, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================================
+         CABECERA SUPERIOR FIJA PARA SMART TV
+         ====================================================================== -->
+    <header>
+        <div class="tv-logo">
+            <span>📺 ¡Super Ángulos TV!</span>
+        </div>
+
+        <div class="header-controls">
+            <div class="round-badge" id="tvRoundBadge">Menú Principal</div>
+            <button type="button" class="tv-top-btn" id="tvMuteBtn" onclick="toggleMute()">🔊 Sonido: SI</button>
+            <button type="button" class="tv-top-btn" onclick="goHome()">🏠 Inicio</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- ==================================================================
+             PANTALLA 1: MENÚ DE INICIO ADAPTADO A MANDO LG MAGIC REMOTE
+             ================================================================== -->
+        <section id="menuScreen" class="screen active-screen">
+            <div class="tv-panel menu-left">
+                <div>
+                    <div class="panel-heading">1. Elige el número de jugadores</div>
+                    <div class="selector-row">
+                        <button type="button" class="tv-option-btn selected" id="btnMode1P" onclick="setPlayers(1)">
+                            <span style="font-size: 4.5vh;">🚀</span>
+                            <span>1 Jugador</span>
+                        </button>
+                        <button type="button" class="tv-option-btn" id="btnMode2P" onclick="setPlayers(2)">
+                            <span style="font-size: 4.5vh;">⚔️</span>
+                            <span>2 Jugadores (Por turnos)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel-heading">2. Rondas para cada jugador</div>
+                    <div class="selector-row">
+                        <button type="button" class="tv-option-btn" id="btnRounds6" onclick="setRounds(6)">
+                            <span>6 Rondas</span>
+                            <small style="font-size: 1.8vh; opacity: 0.8;">Partida Rápida</small>
+                        </button>
+                        <button type="button" class="tv-option-btn" id="btnRounds10" onclick="setRounds(10)">
+                            <span>10 Rondas</span>
+                            <small style="font-size: 1.8vh; opacity: 0.8;">Partida Media</small>
+                        </button>
+                        <button type="button" class="tv-option-btn selected" id="btnRounds12" onclick="setRounds(12)">
+                            <span>12 Rondas</span>
+                            <small style="font-size: 1.8vh; opacity: 0.8;">¡12 Rondas Clásico!</small>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel-heading">3. Personajes (Haz clic en el animal para cambiarlo)</div>
+                    <div class="avatars-row">
+                        <div class="avatar-card">
+                            <div>
+                                <div style="font-size: 2.8vh; font-weight: 900; color: var(--primary-gold);">Jugador 1</div>
+                                <div style="font-size: 1.9vh; color: #cbd5e1;">Pulsa el icono 👉</div>
+                            </div>
+                            <button type="button" class="avatar-change-btn" id="avatarP1Btn" onclick="changeAvatar(0)">🦊</button>
+                        </div>
+
+                        <div class="avatar-card" id="avatarP2Card" style="opacity: 0.45;">
+                            <div>
+                                <div style="font-size: 2.8vh; font-weight: 900; color: #38bdf8;">Jugador 2</div>
+                                <div style="font-size: 1.9vh; color: #cbd5e1;">Pulsa el icono 👉</div>
+                            </div>
+                            <button type="button" class="avatar-change-btn" id="avatarP2Btn" onclick="changeAvatar(1)">🐼</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tv-panel menu-right">
+                <div style="font-size: 6.5vh;">📐🎵</div>
+                <h1 style="font-size: 4.2vh; color: var(--primary-gold);">¡Aprende con Sonidos!</h1>
+                <p style="font-size: 2.3vh; color: #e2e8f0; line-height: 1.4;">
+                    Usa el puntero del <strong>Mando Magic Remote</strong> o las flechas de tu televisor LG.<br><br>
+                    Cada ángulo tiene su propio sonido musical: <strong>agudo</strong> para el ángulo agudo, <strong>grave</strong> para el obtuso, y mucho más.
+                </p>
+
+                <button type="button" class="big-action-btn btn-play-tv" onclick="startGame()">
+                    🎮 ¡Empezar Partida!
+                </button>
+
+                <button type="button" class="big-action-btn btn-lab-tv" onclick="openLab()">
+                    🎹 Laboratorio de Sonidos
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================================================================
+             PANTALLA 2: JUEGO PRINCIPAL EN FORMATO WIDESCREEN 16:9
+             ================================================================== -->
+        <section id="gameScreen" class="screen">
+            <div class="tv-game-body">
+                <!-- Pizarra izquierda -->
+                <div class="canvas-stage">
+                    <div class="stage-title" id="tvTurnBanner">🎯 Turno del Jugador 1: ¿Qué ángulo ves en la pizarra?</div>
+                    <canvas id="gameCanvas" class="tv-canvas" width="760" height="420"></canvas>
+                    <div class="stage-feedback" id="tvFeedbackBox">
+                        👂 Apunta con el mando al botón correcto y escucha cómo suena el ángulo
+                    </div>
+                </div>
+
+                <!-- Botonera derecha 2x3 -->
+                <div class="tv-options-grid" id="tvOptionsGrid">
+                    <button type="button" class="tv-angle-btn color-agudo" data-type="agudo" onclick="submitAnswer('agudo', this)">
+                        <span class="btn-main-text">🐦 Agudo</span>
+                        <span class="btn-sub-text">&lt; 90º (ej. 40º) · Sonido Agudo</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-recto" data-type="recto" onclick="submitAnswer('recto', this)">
+                        <span class="btn-main-text">📐 Recto</span>
+                        <span class="btn-sub-text">= 90º · Esquina Cuadrada</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-obtuso" data-type="obtuso" onclick="submitAnswer('obtuso', this)">
+                        <span class="btn-main-text">🐘 Obtuso</span>
+                        <span class="btn-sub-text">&gt; 90º (ej. 120º) · Sonido Grave</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-llano" data-type="llano" onclick="submitAnswer('llano', this)">
+                        <span class="btn-main-text">➖ Llano</span>
+                        <span class="btn-sub-text">= 180º · Línea Plana</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-consecutivos" data-type="consecutivos" onclick="submitAnswer('consecutivos', this)">
+                        <span class="btn-main-text">👯 Consecutivos</span>
+                        <span class="btn-sub-text">Juntos (comparten 1 lado)</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-adyacentes" data-type="adyacentes" onclick="submitAnswer('adyacentes', this)">
+                        <span class="btn-main-text">🌈 Adyacentes</span>
+                        <span class="btn-sub-text">Juntos y suman 180º</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra inferior de puntuaciones y turnos -->
+            <div class="tv-hud">
+                <div class="hud-player-card active-turn" id="hudCardP1">
+                    <div class="hud-player-left">
+                        <span id="hudAvatarP1" style="font-size: 4.5vh;">🦊</span>
+                        <span>Jugador 1</span>
+                    </div>
+                    <div class="hud-player-score" id="hudScoreP1">0 pts</div>
+                </div>
+
+                <div class="hud-player-card" id="hudCardP2">
+                    <div class="hud-player-left">
+                        <span id="hudAvatarP2" style="font-size: 4.5vh;">🐼</span>
+                        <span>Jugador 2</span>
+                    </div>
+                    <div class="hud-player-score" id="hudScoreP2">0 pts</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================================================================
+             PANTALLA 3: LABORATORIO DE SONIDOS EN FORMATO TV
+             ================================================================== -->
+        <section id="labScreen" class="screen">
+            <div class="tv-game-body" style="height: 84vh;">
+                <div class="canvas-stage">
+                    <div class="stage-title" id="labStageTitle">🎹 Laboratorio Musical de Ángulos</div>
+                    <canvas id="labCanvas" class="tv-canvas" width="760" height="460"></canvas>
+                    <div class="stage-feedback correct" id="labStageDesc">
+                        Apunta con el mando de la TV a cualquier botón de la derecha para ver el ángulo y oír su sonido.
+                    </div>
+                </div>
+
+                <div class="tv-options-grid">
+                    <button type="button" class="tv-angle-btn color-agudo" onclick="showAngleInLab('agudo')">
+                        <span class="btn-main-text">🐦 Agudo (40º)</span>
+                        <span class="btn-sub-text">Oír sonido AGUDO</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-recto" onclick="showAngleInLab('recto')">
+                        <span class="btn-main-text">📐 Recto (90º)</span>
+                        <span class="btn-sub-text">Oír sonido RECTO</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-obtuso" onclick="showAngleInLab('obtuso')">
+                        <span class="btn-main-text">🐘 Obtuso (120º)</span>
+                        <span class="btn-sub-text">Oír sonido GRAVE</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-llano" onclick="showAngleInLab('llano')">
+                        <span class="btn-main-text">➖ Llano (180º)</span>
+                        <span class="btn-sub-text">Oír sonido PLANO</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-consecutivos" onclick="showAngleInLab('consecutivos')">
+                        <span class="btn-main-text">👯 Consecutivos</span>
+                        <span class="btn-sub-text">Oír 2 notas vecinas</span>
+                    </button>
+                    <button type="button" class="tv-angle-btn color-adyacentes" onclick="showAngleInLab('adyacentes')">
+                        <span class="btn-main-text">🌈 Adyacentes</span>
+                        <span class="btn-sub-text">Oír 2 notas que suman 180º</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================================================================
+             PANTALLA 4: PODIO DE CAMPEONES EN TV
+             ================================================================== -->
+        <section id="resultScreen" class="screen">
+            <div class="result-card-tv">
+                <div style="font-size: 7vh;">🏆🎉</div>
+                <h1 style="font-size: 5vh; color: var(--primary-gold);" id="tvWinnerHeadline">¡Fin de la Partida!</h1>
+                <p style="font-size: 2.8vh; color: #e2e8f0; margin-top: 1vh;" id="tvWinnerSub">¡Habéis completado todas las rondas!</p>
+
+                <div class="podium-list-tv" id="tvPodiumList"></div>
+
+                <div style="display: flex; gap: 2.5vw; justify-content: center;">
+                    <button type="button" class="big-action-btn btn-play-tv" style="max-width: 30vw;" onclick="startGame()">
+                        🔄 Jugar Otra Vez
+                    </button>
+                    <button type="button" class="big-action-btn btn-lab-tv" style="max-width: 30vw;" onclick="goHome()">
+                        🏠 Volver al Menú
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        /* ==========================================================================
+           1. SINTETIZADOR DE SONIDO EDUCATIVO (COMPATIBLE CON LG webOS TV)
+           ==========================================================================
+           - Ángulo Agudo (40º): Sonido muy AGUDO y brillante (1318 Hz -> 2093 Hz).
+           - Ángulo Obtuso (120º): Sonido muy GRAVE y profundo (130 Hz -> 73 Hz).
+           - Ángulo Recto (90º): Dos tonos firmes de onda cuadrada (440 Hz -> 659 Hz).
+           - Ángulo Llano (180º): Nota continua, horizontal y plana (330 Hz).
+           - Ángulos Consecutivos: Dos notas saltarinas seguidas (Do -> Mi).
+           - Ángulos Adyacentes: Dos notas seguidas que cierran en un acorde de 180º.
+        */
+        var audioCtx = null;
+        var isMuted = false;
+
+        function ensureAudio() {
+            if (!audioCtx) {
+                var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            var btn = document.getElementById('tvMuteBtn');
+            btn.textContent = isMuted ? '🔇 Sonido: NO' : '🔊 Sonido: SI';
+        }
+
+        function playTone(freq, endFreq, waveType, delaySec, durationSec, vol) {
+            if (isMuted) return;
+            ensureAudio();
+            if (!audioCtx) return;
+
+            var now = audioCtx.currentTime + delaySec;
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+
+            osc.type = waveType || 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            if (endFreq !== null && endFreq !== undefined) {
+                osc.frequency.exponentialRampToValueAtTime(endFreq, now + durationSec);
+            }
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(vol || 0.3, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + durationSec + 0.02);
+        }
+
+        /**
+         * Reproduce el sonido pedagógico asociado a cada tipo de ángulo.
+         */
+        function playAngleSound(type) {
+            if (isMuted) return;
+            ensureAudio();
+
+            if (type === 'agudo') {
+                // SONIDO AGUDO: Frecuencia alta de flauta/pajarito
+                playTone(1318.5, 1760, 'triangle', 0, 0.15, 0.32);
+                playTone(1760, 2093, 'sine', 0.13, 0.24, 0.35);
+            } else if (type === 'obtuso') {
+                // SONIDO GRAVE: Frecuencia baja de tuba/elefante
+                playTone(130.8, 98.0, 'sawtooth', 0, 0.24, 0.28);
+                playTone(98.0, 73.4, 'triangle', 0.20, 0.38, 0.40);
+            } else if (type === 'recto') {
+                // SONIDO RECTO (90º): Dos golpes firmes perpendiculares
+                playTone(440, null, 'square', 0, 0.14, 0.22);
+                playTone(659.25, null, 'square', 0.15, 0.25, 0.24);
+            } else if (type === 'llano') {
+                // SONIDO LLANO (180º): Nota larga y completamente plana
+                playTone(329.63, 329.63, 'sine', 0, 0.50, 0.34);
+                playTone(659.25, 659.25, 'triangle', 0, 0.50, 0.15);
+            } else if (type === 'consecutivos') {
+                // SONIDO CONSECUTIVOS: Dos notas vecinas seguidas
+                playTone(523.25, null, 'triangle', 0, 0.17, 0.30);
+                playTone(659.25, null, 'triangle', 0.18, 0.24, 0.30);
+            } else if (type === 'adyacentes') {
+                // SONIDO ADYACENTES: Dos notas vecinas que completan 180º
+                playTone(440, null, 'triangle', 0, 0.15, 0.28);
+                playTone(554.37, null, 'triangle', 0.15, 0.15, 0.28);
+                playTone(659.25, null, 'sine', 0.30, 0.35, 0.32);
+            }
+        }
+
+        function playResultChime(isCorrect) {
+            if (isMuted) return;
+            if (isCorrect) {
+                playTone(587.33, null, 'sine', 0.42, 0.12, 0.25);
+                playTone(880.0, null, 'sine', 0.54, 0.28, 0.30);
+            } else {
+                playTone(230, 155, 'sawtooth', 0.44, 0.30, 0.20);
+            }
+        }
+
+        /* ==========================================================================
+           2. ESTADO DEL JUEGO Y CONFIGURACIÓN (1 O 2 JUGADORES, 12 RONDAS)
+           ========================================================================== */
+        var AVATARS = ['🦊', '🐼', '🦁', '🐸', '🦄', '🦖', '🐙', '🦉', '🐯', '🐨'];
+
+        var state = {
+            numPlayers: 1,
+            maxRounds: 12, // 12 rondas por defecto para cada jugador
+            currentRound: 1,
+            currentPlayer: 0, // 0 = Jugador 1, 1 = Jugador 2
+            players: [
+                { name: 'Jugador 1', avatar: '🦊', score: 0, hits: 0 },
+                { name: 'Jugador 2', avatar: '🐼', score: 0, hits: 0 }
+            ],
+            pools: [[], []],
+            currentQuestion: null,
+            canAnswer: false
+        };
+
+        function setPlayers(count) {
+            state.numPlayers = count;
+            document.getElementById('btnMode1P').className = 'tv-option-btn' + (count === 1 ? ' selected' : '');
+            document.getElementById('btnMode2P').className = 'tv-option-btn' + (count === 2 ? ' selected' : '');
+            document.getElementById('avatarP2Card').style.opacity = (count === 2) ? '1' : '0.45';
+            playTone(count === 1 ? 520 : 640, null, 'sine', 0, 0.1, 0.2);
+        }
+
+        function setRounds(rounds) {
+            state.maxRounds = rounds;
+            document.getElementById('btnRounds6').className = 'tv-option-btn' + (rounds === 6 ? ' selected' : '');
+            document.getElementById('btnRounds10').className = 'tv-option-btn' + (rounds === 10 ? ' selected' : '');
+            document.getElementById('btnRounds12').className = 'tv-option-btn' + (rounds === 12 ? ' selected' : '');
+            playTone(720, null, 'sine', 0, 0.1, 0.2);
+        }
+
+        function changeAvatar(pIdx) {
+            var current = state.players[pIdx].avatar;
+            var nextIdx = (AVATARS.indexOf(current) + 1) % AVATARS.length;
+            state.players[pIdx].avatar = AVATARS[nextIdx];
+            document.getElementById(pIdx === 0 ? 'avatarP1Btn' : 'avatarP2Btn').textContent = AVATARS[nextIdx];
+            playTone(580 + nextIdx * 40, null, 'triangle', 0, 0.1, 0.22);
+        }
+
+        function switchScreen(screenId) {
+            var screens = document.querySelectorAll('.screen');
+            for (var i = 0; i < screens.length; i++) {
+                screens[i].classList.remove('active-screen');
+            }
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function goHome() {
+            document.getElementById('tvRoundBadge').textContent = 'Menú Principal';
+            switchScreen('menuScreen');
+        }
+
+        /* ==========================================================================
+           3. GENERADOR DE PREGUNTAS Y DIBUJO COMPATIBLE CON CHROMIUM 87 (LG TV)
+           ==========================================================================
+           Nota importante para navegadores de Smart TV LG:
+           No se utiliza ctx.roundRect() nativo porque los televisores con webOS usan
+           motores Chromium anteriores a Chrome 99. En su lugar usamos drawRoundedBox().
+        */
+        function drawRoundedBox(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function createBalancedDeck(rounds) {
+            var types = ['agudo', 'recto', 'obtuso', 'llano', 'consecutivos', 'adyacentes'];
+            var deck = [];
+            for (var i = 0; i < rounds; i++) {
+                deck.push(types[i % types.length]);
+            }
+            // Barajado Fisher-Yates
+            for (var j = deck.length - 1; j > 0; j--) {
+                var r = Math.floor(Math.random() * (j + 1));
+                var temp = deck[j];
+                deck[j] = deck[r];
+                deck[r] = temp;
+            }
+            return deck;
+        }
+
+        function generateAngleObject(type, canonicalOnly) {
+            var baseRotations = canonicalOnly ? [0] : [0, 8, -8, 12];
+            var base = baseRotations[Math.floor(Math.random() * baseRotations.length)];
+
+            if (type === 'agudo') {
+                var acuteList = canonicalOnly ? [40] : [40, 40, 35, 45, 50];
+                var d1 = acuteList[Math.floor(Math.random() * acuteList.length)];
+                return {
+                    type: 'agudo',
+                    title: 'Ángulo Agudo (' + d1 + 'º)',
+                    deg1: d1,
+                    base: base,
+                    info: '¡Es AGUDO (' + d1 + 'º)! Mide menos de 90º y tiene un sonido finito y AGUDO 🐦.'
+                };
+            }
+            if (type === 'recto') {
+                return {
+                    type: 'recto',
+                    title: 'Ángulo Recto (90º)',
+                    deg1: 90,
+                    base: base,
+                    info: '¡Es RECTO (90º)! Forma una esquina cuadrada perfecta de 90º 📐.'
+                };
+            }
+            if (type === 'obtuso') {
+                var obtuseList = canonicalOnly ? [120] : [120, 120, 115, 130, 135];
+                var dObt = obtuseList[Math.floor(Math.random() * obtuseList.length)];
+                return {
+                    type: 'obtuso',
+                    title: 'Ángulo Obtuso (' + dObt + 'º)',
+                    deg1: dObt,
+                    base: base,
+                    info: '¡Es OBTUSO (' + dObt + 'º)! Mide más de 90º y tiene un sonido gordito y GRAVE 🐘.'
+                };
+            }
+            if (type === 'llano') {
+                return {
+                    type: 'llano',
+                    title: 'Ángulo Llano (180º)',
+                    deg1: 180,
+                    base: 0,
+                    info: '¡Es LLANO (180º)! Es completamente plano como una línea recta ➖.'
+                };
+            }
+            if (type === 'consecutivos') {
+                var cPairs = canonicalOnly ? [[40, 55]] : [[40, 50], [35, 45], [45, 60], [50, 55]];
+                var pairC = cPairs[Math.floor(Math.random() * cPairs.length)];
+                return {
+                    type: 'consecutivos',
+                    title: 'Ángulos Consecutivos (' + pairC[0] + 'º y ' + pairC[1] + 'º)',
+                    deg1: pairC[0],
+                    deg2: pairC[1],
+                    base: base,
+                    info: '¡Son CONSECUTIVOS (' + pairC[0] + 'º y ' + pairC[1] + 'º)! Están pegados compartiendo un lado 👯.'
+                };
+            }
+            // Adyacentes
+            var aPairs = canonicalOnly ? [[60, 120]] : [[60, 120], [40, 140], [50, 130], [70, 110]];
+            var pairA = aPairs[Math.floor(Math.random() * aPairs.length)];
+            return {
+                type: 'adyacentes',
+                title: 'Ángulos Adyacentes (' + pairA[0] + 'º + ' + pairA[1] + 'º = 180º)',
+                deg1: pairA[0],
+                deg2: pairA[1],
+                base: 0,
+                info: '¡Son ADYACENTES! Comparten un lado y entre los dos suman un llano de 180º 🌈.'
+            };
+        }
+
+        /**
+         * Dibuja el ángulo en alta resolución para televisores de salón.
+         */
+        function renderAngleTV(canvasId, angleObj) {
+            var canvas = document.getElementById(canvasId);
+            var ctx = canvas.getContext('2d');
+            var w = canvas.width;
+            var h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Cuadrícula de pizarra suave
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1.5;
+            for (var gx = 30; gx < w; gx += 40) {
+                ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+            }
+            for (var gy = 30; gy < h; gy += 40) {
+                ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+            }
+
+            var isCentered = (angleObj.type === 'llano' || angleObj.type === 'adyacentes' || angleObj.type === 'obtuso');
+            var vx = isCentered ? w * 0.50 : w * 0.38;
+            var vy = h * 0.78;
+            var rayLen = 235;
+
+            function degToRad(d) { return -(d * Math.PI) / 180; }
+
+            var startDeg = angleObj.base || 0;
+            var midDeg = startDeg + angleObj.deg1;
+
+            // 1. Ángulos simples (Agudo, Recto, Obtuso, Llano)
+            if (angleObj.type === 'agudo' || angleObj.type === 'recto' || angleObj.type === 'obtuso' || angleObj.type === 'llano') {
+                if (angleObj.type === 'recto') {
+                    var sq = 62;
+                    var r1 = degToRad(startDeg);
+                    var r2 = degToRad(midDeg);
+                    var p1x = vx + sq * Math.cos(r1);
+                    var p1y = vy + sq * Math.sin(r1);
+                    var p2x = vx + sq * Math.cos(r2);
+                    var p2y = vy + sq * Math.sin(r2);
+                    var pcx = p1x + sq * Math.cos(r2);
+                    var pcy = p1y + sq * Math.sin(r2);
+
+                    ctx.beginPath();
+                    ctx.moveTo(vx, vy);
+                    ctx.lineTo(p1x, p1y);
+                    ctx.lineTo(pcx, pcy);
+                    ctx.lineTo(p2x, p2y);
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(34, 197, 94, 0.28)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#15803d';
+                    ctx.lineWidth = 5;
+                    ctx.stroke();
+                } else {
+                    var arcR = 105;
+                    ctx.beginPath();
+                    ctx.moveTo(vx, vy);
+                    ctx.arc(vx, vy, arcR, degToRad(startDeg), degToRad(midDeg), true);
+                    ctx.closePath();
+
+                    var styles = {
+                        agudo: { fill: 'rgba(14, 165, 233, 0.28)', stroke: '#0284c7' },
+                        obtuso: { fill: 'rgba(249, 115, 22, 0.28)', stroke: '#c2410c' },
+                        llano: { fill: 'rgba(168, 85, 247, 0.28)', stroke: '#7e22ce' }
+                    };
+                    ctx.fillStyle = styles[angleObj.type].fill;
+                    ctx.fill();
+                    ctx.strokeStyle = styles[angleObj.type].stroke;
+                    ctx.lineWidth = 5.5;
+                    ctx.stroke();
+                }
+
+                drawTVRay(ctx, vx, vy, startDeg, rayLen, '#0f172a');
+                drawTVRay(ctx, vx, vy, midDeg, rayLen, '#0f172a');
+
+                var halfDeg = startDeg + angleObj.deg1 / 2;
+                var badgeDist = (angleObj.type === 'recto') ? 115 : 140;
+                drawTVBadge(
+                    ctx,
+                    vx + badgeDist * Math.cos(degToRad(halfDeg)),
+                    vy + badgeDist * Math.sin(degToRad(halfDeg)),
+                    angleObj.deg1 + 'º',
+                    '#0f172a'
+                );
+            } else {
+                // 2. Ángulos dobles (Consecutivos y Adyacentes)
+                var endDeg = midDeg + angleObj.deg2;
+
+                // Primer sector angular
+                ctx.beginPath();
+                ctx.moveTo(vx, vy);
+                ctx.arc(vx, vy, 95, degToRad(startDeg), degToRad(midDeg), true);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(236, 72, 153, 0.32)';
+                ctx.fill();
+                ctx.strokeStyle = '#be185d';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                // Segundo sector angular
+                ctx.beginPath();
+                ctx.moveTo(vx, vy);
+                ctx.arc(vx, vy, 122, degToRad(midDeg), degToRad(endDeg), true);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(20, 184, 166, 0.32)';
+                ctx.fill();
+                ctx.strokeStyle = '#0f766e';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                // Tres semirrectas (la central compartida en color rojo intenso)
+                drawTVRay(ctx, vx, vy, startDeg, rayLen, '#0f172a');
+                drawTVRay(ctx, vx, vy, endDeg, rayLen, '#0f172a');
+                drawTVRay(ctx, vx, vy, midDeg, rayLen, '#e11d48');
+
+                var b1 = startDeg + angleObj.deg1 / 2;
+                var b2 = midDeg + angleObj.deg2 / 2;
+                drawTVBadge(
+                    ctx,
+                    vx + 138 * Math.cos(degToRad(b1)),
+                    vy + 138 * Math.sin(degToRad(b1)),
+                    angleObj.deg1 + 'º',
+                    '#be185d'
+                );
+                drawTVBadge(
+                    ctx,
+                    vx + 162 * Math.cos(degToRad(b2)),
+                    vy + 162 * Math.sin(degToRad(b2)),
+                    angleObj.deg2 + 'º',
+                    '#0f766e'
+                );
+            }
+
+            // Vértice amarillo grande
+            ctx.beginPath();
+            ctx.arc(vx, vy, 11, 0, Math.PI * 2);
+            ctx.fillStyle = '#facc15';
+            ctx.fill();
+            ctx.lineWidth = 4.5;
+            ctx.strokeStyle = '#0f172a';
+            ctx.stroke();
+        }
+
+        function drawTVRay(ctx, vx, vy, deg, length, color) {
+            var rad = -(deg * Math.PI) / 180;
+            var ex = vx + length * Math.cos(rad);
+            var ey = vy + length * Math.sin(rad);
+
+            ctx.beginPath();
+            ctx.moveTo(vx, vy);
+            ctx.lineTo(ex, ey);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 7.5;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            var head = 18;
+            ctx.beginPath();
+            ctx.moveTo(ex, ey);
+            ctx.lineTo(ex - head * Math.cos(rad - 0.42), ey - head * Math.sin(rad - 0.42));
+            ctx.lineTo(ex - head * Math.cos(rad + 0.42), ey - head * Math.sin(rad + 0.42));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function drawTVBadge(ctx, x, y, text, bg) {
+            ctx.save();
+            ctx.font = '900 24px "Segoe UI", Arial, sans-serif';
+            var tw = ctx.measureText(text).width;
+            var bw = tw + 26;
+            var bh = 40;
+
+            ctx.fillStyle = bg;
+            drawRoundedBox(ctx, x - bw / 2, y - bh / 2, bw, bh, 12);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y + 1);
+            ctx.restore();
+        }
+
+        /* ==========================================================================
+           4. LÓGICA DE PARTIDA Y TURNOS (RONDA 1: J1 -> J2, RONDA 2: J1 -> J2...)
+           ========================================================================== */
+        function startGame() {
+            ensureAudio();
+            state.currentRound = 1;
+            state.currentPlayer = 0;
+
+            state.players[0].score = 0;
+            state.players[0].hits = 0;
+            state.players[1].score = 0;
+            state.players[1].hits = 0;
+
+            state.pools[0] = createBalancedDeck(state.maxRounds);
+            state.pools[1] = createBalancedDeck(state.maxRounds);
+
+            document.getElementById('hudCardP2').style.display = (state.numPlayers === 2) ? 'flex' : 'none';
+
+            switchScreen('gameScreen');
+            loadTurn();
+        }
+
+        function updateHUD() {
+            document.getElementById('tvRoundBadge').textContent =
+                'Ronda ' + state.currentRound + ' de ' + state.maxRounds;
+
+            document.getElementById('hudAvatarP1').textContent = state.players[0].avatar;
+            document.getElementById('hudScoreP1').textContent = state.players[0].score + ' pts';
+            document.getElementById('hudCardP1').className =
+                'hud-player-card' + (state.currentPlayer === 0 ? ' active-turn' : '');
+
+            document.getElementById('hudAvatarP2').textContent = state.players[1].avatar;
+            document.getElementById('hudScoreP2').textContent = state.players[1].score + ' pts';
+            document.getElementById('hudCardP2').className =
+                'hud-player-card' + (state.currentPlayer === 1 ? ' active-turn' : '');
+        }
+
+        function loadTurn() {
+            updateHUD();
+
+            var pIdx = state.currentPlayer;
+            var player = state.players[pIdx];
+            var nextType = state.pools[pIdx][state.currentRound - 1];
+
+            state.currentQuestion = generateAngleObject(nextType, false);
+            state.canAnswer = true;
+
+            var buttons = document.querySelectorAll('#tvOptionsGrid .tv-angle-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = false;
+                buttons[i].classList.remove('highlight-correct', 'highlight-wrong');
+            }
+
+            document.getElementById('tvTurnBanner').textContent =
+                player.avatar + ' Turno de ' + player.name + ' (Ronda ' + state.currentRound + '/' + state.maxRounds + '): ¿Qué ángulo es?';
+
+            var fb = document.getElementById('tvFeedbackBox');
+            fb.className = 'stage-feedback';
+            fb.textContent = '👂 Selecciona con el mando el tipo de ángulo y escucha su sonido';
+
+            renderAngleTV('gameCanvas', state.currentQuestion);
+        }
+
+        function submitAnswer(chosenType, btnEl) {
+            if (!state.canAnswer) return;
+            state.canAnswer = false;
+
+            // 1. Sonar siempre el sonido educativo del botón elegido
+            playAngleSound(chosenType);
+
+            var correctType = state.currentQuestion.type;
+            var isHit = (chosenType === correctType);
+            var player = state.players[state.currentPlayer];
+            var fb = document.getElementById('tvFeedbackBox');
+
+            var buttons = document.querySelectorAll('#tvOptionsGrid .tv-angle-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+                if (buttons[i].getAttribute('data-type') === correctType) {
+                    buttons[i].classList.add('highlight-correct');
+                }
+            }
+
+            if (isHit) {
+                player.score += 10;
+                player.hits += 1;
+                fb.className = 'stage-feedback correct';
+                fb.textContent = '✅ ' + state.currentQuestion.info;
+                playResultChime(true);
+            } else {
+                btnEl.classList.add('highlight-wrong');
+                fb.className = 'stage-feedback wrong';
+                fb.textContent = '❌ ' + state.currentQuestion.info;
+                playResultChime(false);
+                setTimeout(function () {
+                    playAngleSound(correctType);
+                }, 700);
+            }
+
+            updateHUD();
+
+            setTimeout(function () {
+                nextTurn();
+            }, 2500);
+        }
+
+        function nextTurn() {
+            if (state.numPlayers === 2) {
+                if (state.currentPlayer === 0) {
+                    state.currentPlayer = 1;
+                    loadTurn();
+                    return;
+                } else {
+                    state.currentPlayer = 0;
+                    state.currentRound += 1;
+                }
+            } else {
+                state.currentRound += 1;
+            }
+
+            if (state.currentRound > state.maxRounds) {
+                finishGame();
+            } else {
+                loadTurn();
+            }
+        }
+
+        function finishGame() {
+            switchScreen('resultScreen');
+            document.getElementById('tvRoundBadge').textContent = '¡Partida Finalizada!';
+
+            playTone(523.25, null, 'sine', 0, 0.15, 0.3);
+            playTone(659.25, null, 'sine', 0.15, 0.15, 0.3);
+            playTone(783.99, null, 'sine', 0.30, 0.15, 0.3);
+            playTone(1046.5, null, 'sine', 0.45, 0.40, 0.35);
+
+            var p1 = state.players[0];
+            var p2 = state.players[1];
+            var podium = document.getElementById('tvPodiumList');
+            var headline = document.getElementById('tvWinnerHeadline');
+            var sub = document.getElementById('tvWinnerSub');
+
+            if (state.numPlayers === 1) {
+                headline.textContent = '¡Gran trabajo, ' + p1.avatar + ' ' + p1.name + '!';
+                sub.textContent = 'Has acertado ' + p1.hits + ' de ' + state.maxRounds + ' ángulos.';
+                podium.innerHTML =
+                    '<div class="podium-item-tv winner">' +
+                        '<div style="font-size:6vh;">' + p1.avatar + '</div>' +
+                        '<div style="font-size:3.5vh; font-weight:900; margin:1vh 0;">' + p1.name + '</div>' +
+                        '<div style="font-size:4.2vh; color:var(--primary-gold); font-weight:900;">🏆 ' + p1.score + ' puntos</div>' +
+                        '<div style="font-size:2.3vh; color:#cbd5e1; margin-top:0.8vh;">Aciertos: ' + p1.hits + ' / ' + state.maxRounds + '</div>' +
+                    '</div>';
+            } else {
+                if (p1.score > p2.score) {
+                    headline.textContent = '¡Campeón: ' + p1.avatar + ' ' + p1.name + '!';
+                } else if (p2.score > p1.score) {
+                    headline.textContent = '¡Campeón: ' + p2.avatar + ' ' + p2.name + '!';
+                } else {
+                    headline.textContent = '¡Empate de Campeones! 🤝';
+                }
+                sub.textContent = 'Resultado tras las ' + state.maxRounds + ' rondas de cada jugador:';
+
+                var p1Win = p1.score >= p2.score;
+                var p2Win = p2.score >= p1.score;
+
+                podium.innerHTML =
+                    '<div class="podium-item-tv ' + (p1Win ? 'winner' : '') + '">' +
+                        '<div style="font-size:5.5vh;">' + p1.avatar + (p1Win ? ' 👑' : '') + '</div>' +
+                        '<div style="font-size:3.2vh; font-weight:900; margin:1vh 0;">' + p1.name + '</div>' +
+                        '<div style="font-size:4vh; color:var(--primary-gold); font-weight:900;">' + p1.score + ' pts</div>' +
+                        '<div style="font-size:2.2vh; color:#cbd5e1; margin-top:0.8vh;">Aciertos: ' + p1.hits + ' / ' + state.maxRounds + '</div>' +
+                    '</div>' +
+                    '<div class="podium-item-tv ' + (p2Win ? 'winner' : '') + '">' +
+                        '<div style="font-size:5.5vh;">' + p2.avatar + (p2Win ? ' 👑' : '') + '</div>' +
+                        '<div style="font-size:3.2vh; font-weight:900; margin:1vh 0;">' + p2.name + '</div>' +
+                        '<div style="font-size:4vh; color:var(--primary-gold); font-weight:900;">' + p2.score + ' pts</div>' +
+                        '<div style="font-size:2.2vh; color:#cbd5e1; margin-top:0.8vh;">Aciertos: ' + p2.hits + ' / ' + state.maxRounds + '</div>' +
+                    '</div>';
+            }
+        }
+
+        /* ==========================================================================
+           5. LABORATORIO DE SONIDOS EN TV
+           ========================================================================== */
+        function openLab() {
+            ensureAudio();
+            document.getElementById('tvRoundBadge').textContent = 'Modo Laboratorio';
+            switchScreen('labScreen');
+            showAngleInLab('agudo');
+        }
+
+        function showAngleInLab(type) {
+            var angleObj = generateAngleObject(type, true);
+            renderAngleTV('labCanvas', angleObj);
+            document.getElementById('labStageTitle').textContent = '📐 ' + angleObj.title;
+            document.getElementById('labStageDesc').textContent = angleObj.info;
+            playAngleSound(type);
+        }
+    </script>
+</body>
+</html>
